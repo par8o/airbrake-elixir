@@ -33,7 +33,7 @@ defmodule Airbrake.Channel do
           super(msg, socket)
         rescue
           exception ->
-            send_to_airbrake(exception, socket.assigns, msg)
+            send_to_airbrake(exception, socket.assigns, %{ msg: msg })
         end
       end
 
