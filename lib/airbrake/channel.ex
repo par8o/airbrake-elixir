@@ -15,7 +15,7 @@ defmodule Airbrake.Channel do
           super(channel_name, msg, socket)
         rescue
           exception ->
-            send_to_airbrake(exception, socket.assigns, %{message: msg}, %{channel: channel_name})
+            send_to_airbrake(exception, socket_data(socket), message_data(msg), %{channel: channel_name})
         end
       end
 
@@ -24,7 +24,7 @@ defmodule Airbrake.Channel do
           super(msg_type, msg, socket)
         rescue
           exception ->
-            send_to_airbrake(exception, socket.assigns, %{message: msg}, %{msg_type: msg_type})
+            send_to_airbrake(exception, socket_data(socket), message_data(msg), %{msg_type: msg_type})
         end
       end
 
@@ -33,7 +33,7 @@ defmodule Airbrake.Channel do
           super(msg, socket)
         rescue
           exception ->
-            send_to_airbrake(exception, socket.assigns, %{message: msg})
+            send_to_airbrake(exception, socket_data(socket), message_data(msg))
         end
       end
 
@@ -42,8 +42,16 @@ defmodule Airbrake.Channel do
           super(reason, socket)
         rescue
           exception ->
-            send_to_airbrake(exception, socket.assigns, %{reason: reason})
+            send_to_airbrake(exception, socket_data(socket), %{reason: reason})
         end
+      end
+
+      defp socket_data(socket) do
+        %{assigns: socket.assigns}
+      end
+
+      defp message_data(message) do
+        %{message: message}
       end
 
       defp send_to_airbrake(exception, session, params, context \\ nil) do
