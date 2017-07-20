@@ -2,6 +2,8 @@ defmodule Airbrake.Worker do
   @moduledoc false
   use GenServer
 
+  alias Airbrake.JSONEncoder
+
   defmodule State do
     @moduledoc false
     defstruct refs: %{}, last_exception: nil
@@ -57,7 +59,7 @@ defmodule Airbrake.Worker do
   def handle_cast({:report, exception, stacktrace, options}, %{last_exception: {exception, details}} = state) do
     enhanced_options = Enum.reduce([:context, :params, :session, :env], options, fn(key, enhanced_options) ->
       Keyword.put(enhanced_options, key, Map.merge(options[key] || %{}, details[key] || %{}))
-    end)    
+    end)
     send_report(exception, stacktrace, enhanced_options)
     {:noreply, Map.put(state, :last_exception, nil)}
   end
@@ -86,7 +88,7 @@ defmodule Airbrake.Worker do
   defp send_report(exception, stacktrace, options) do
     unless ignore?(exception) do
       payload = Airbrake.Payload.new(exception, stacktrace, options)
-      HTTPoison.post(@notify_url, Poison.encode!(payload), @request_headers)
+      HTTPoison.post(@notify_url, JSONEncoder.encode(payload), @request_headers)
     end
   end
 
